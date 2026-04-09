@@ -600,29 +600,28 @@
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
             
-            // 1. Gather Form Data
-            const bookingName = document.querySelector('input[placeholder="Enter name"]').value;
-            const contact = document.querySelector('input[placeholder="Phone number"]').value;
-            const school = document.querySelector('input[placeholder="e.g. Sunnydale High"]').value;
-            const className = document.querySelector('input[placeholder="e.g. 5A"]').value;
+            // 1. Get Values (Ensure IDs match your HTML inputs)
+            const bookingName = document.getElementById('bookingName').value;
+            const contact = document.getElementById('clientContact').value;
+            const school = document.getElementById('schoolName').value;
+            const className = document.getElementById('classField').value;
             const photoInput = document.getElementById('payment-photo');
 
-            // Validation
             if (photoInput.files.length === 0) {
                 alert("Please upload a payment photo.");
                 return;
             }
 
-            // 2. Prepare Payload (FormData is required for file uploads)
+            // 2. Prepare FormData
             const formData = new FormData();
             formData.append('bookingName', bookingName);
             formData.append('contact', contact);
             formData.append('school', school);
             formData.append('className', className);
-            formData.append('paymentPhoto', photoInput.files[0]);
-            formData.append('cart', JSON.stringify(cart)); // Send cart as a JSON string
+            formData.append('paymentPhoto', photoInput.files[0]); // Key must be 'paymentPhoto'
+            formData.append('cart', JSON.stringify(cart));
 
-            // 3. Send to Backend
+            // 3. Send
             btn.innerHTML = `<i class="ph-bold ph-spinner ph-spin"></i> Uploading...`;
             btn.disabled = true;
 
@@ -635,17 +634,15 @@
                 if (response.ok) {
                     closeModal('payment-modal');
                     document.getElementById('success-modal').classList.add('active');
-                    
-                    // Reset Cart
                     cart = {};
                     updateCart();
-                    e.target.reset(); // Clear form
+                    e.target.reset();
                 } else {
-                    alert('Error submitting order. Please try again.');
+                    alert('Error submitting order.');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Connection error. Is the server running?');
+                console.error(error);
+                alert('Error sending order.');
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
