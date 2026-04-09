@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bless Canteen | Order</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #ea580c; /* Bright Orange */
+            --primary-dark: #c2410c;
+            --bg-body: #fff7ed;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #f3f4f6;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Main Layout */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden; 
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Left Side: Menu */
+        .menu-area {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .day-tab {
+            border: 1px solid var(--border);
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .day-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .category-header {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem 0;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.25rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .menu-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .menu-card:hover { border-color: var(--primary); }
+
+        .m-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .m-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; flex: 1; }
+        .m-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .m-price { font-weight: 700; color: var(--primary-dark); }
+        
+        .btn-add {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-add:hover { background: var(--primary); }
+
+        /* Right Side: Order Box */
+        .sidebar {
+            width: 400px;
+            background: white;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.02);
+            z-index: 5;
+        }
+
+        .sidebar-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: #fafafa;
+        }
+
+        /* Scrollable Cart Area */
+        .cart-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .ci-left { display: flex; flex-direction: column; gap: 2px; }
+        
+        .ci-day {
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            align-self: flex-start;
+            text-transform: uppercase;
+        }
+
+        .ci-name { font-weight: 600; font-size: 0.9rem; }
+        .ci-price { font-size: 0.8rem; color: var(--text-muted); }
+
+        .ci-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f9fafb;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .ci-btn {
+            border: none;
+            background: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-main);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Fixed Bottom of Sidebar */
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .summary-total { 
+            font-weight: 800; 
+            font-size: 1.25rem; 
+            margin-top: 1rem; 
+            padding-top: 1rem; 
+            border-top: 2px solid var(--border); 
+            color: var(--primary-dark);
+        }
+
+        .payment-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .payment-btn:hover { background: var(--primary-dark); }
+        .payment-btn:disabled { background: #e5e7eb; cursor: not-allowed; color: #9ca3af; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white; width: 400px; padding: 2rem; border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-label {
+            display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--text-main);
+        }
+        .form-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border: 1px solid var(--border); border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        /* File Input Styling */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .file-upload-input {
+            width: 100%; padding: 0.75rem;
+            border: 1px dashed var(--primary);
+            background: #fff7ed;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .close-btn {
+            background: transparent; border: 1px solid var(--border); 
+            padding: 0.75rem; width: 100%; border-radius: 6px; 
+            cursor: pointer; margin-top: 0.5rem; font-weight: 600;
+        }
+        .pay-confirm-btn {
+            background: #10b981; color: white; border: none; 
+            width: 100%; padding: 0.75rem; border-radius: 6px; 
+            font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .pay-confirm-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        .empty-msg { text-align: center; color: var(--text-muted); margin-top: 2rem; font-style: italic; }
+
+        @media (max-width: 800px) {
+            .layout { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; height: auto; border-left: none; border-top: 1px solid var(--border); }
+            .cart-list { max-height: 300px; }
+            body { overflow: auto; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <i class="ph-fill ph-storefront" style="color: var(--primary); font-size: 1.5rem;"></i>
+            Bless Canteen
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Menu Section -->
+        <main class="menu-area">
+            <div class="day-tabs" id="day-tabs">
+                <!-- Tabs injected via JS -->
+            </div>
+            <div id="menu-container">
+                <!-- Menu items injected via JS -->
+            </div>
+        </main>
+
+        <!-- Order Box (Sidebar) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                Current Order
+            </div>
+
+            <!-- Scrollable List -->
+            <div class="cart-list" id="cart-list">
+                <div class="empty-msg">Your cart is empty.</div>
+            </div>
+
+            <!-- Fixed Footer -->
+            <div class="sidebar-footer">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax (5%)</span>
+                    <span id="tax">$0.00</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span id="total">$0.00</span>
+                </div>
+
+                <button class="payment-btn" id="pay-btn" onclick="openPaymentModal()" disabled>
+                    <i class="ph-bold ph-receipt"></i> Proceed to Checkout
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="payment-modal">
+        <div class="modal">
+            <h2 style="margin-bottom: 0.5rem;">Order Details</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Please fill in your details and upload proof of payment.</p>
+            
+            <form onsubmit="submitOrder(event)">
+                <!-- Inside the modal form -->
+                <input type="text" id="bookingName" class="form-input" placeholder="Enter name" required>
+                <input type="tel" id="clientContact" class="form-input" placeholder="Phone number" required>
+                <input type="text" id="schoolName" class="form-input" placeholder="e.g. Sunnydale High" required>
+                <input type="text" id="classField" class="form-input" placeholder="e.g. 5A" required>
+                <input type="file" id="payment-photo" class="file-upload-input" accept="image/*" required>
+
+                <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: #666;">Total to Pay:</span>
+                    <strong style="font-size: 1.2rem; color: var(--primary-dark);" id="modal-total">$0.00</strong>
+                </div>
+
+                <button type="submit" class="pay-confirm-btn" id="submit-btn">
+                    <i class="ph-bold ph-paper-plane-right"></i> Submit Order
+                </button>
+            </form>
+            <button class="close-btn" onclick="closeModal('payment-modal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="success-modal">
+        <div class="modal" style="text-align: center;">
+            <i class="ph-fill ph-check-circle" style="font-size: 4rem; color: #10b981; margin-bottom: 1rem;"></i>
+            <h2>Order Submitted!</h2>
+            <p style="color: var(--text-muted); margin: 1rem 0;">Thank you! We have received your order and payment proof. We will contact you shortly.</p>
+            <button class="pay-confirm-btn" onclick="location.reload()">Order Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Data Configuration ---
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        let currentDay = 'Monday';
+        
+        // Data Generator
+        const menuDB = {};
+        days.forEach(day => {
+            menuDB[day] = {
+                appetizers: generateItems(4, 'Appetizer', day),
+                mains: generateItems(4, 'Main Course', day),
+                desserts: generateItems(6, 'Dessert', day)
+            };
+        });
+
+        function generateItems(count, type, day) {
+            const items = [];
+            const prefixes = {
+                'Appetizer': ['Crispy', 'Spicy', 'Fresh', 'Grilled'],
+                'Main Course': ['Roasted', 'Steamed', 'Pan-fried', 'Stewed'],
+                'Dessert': ['Sweet', 'Icy', 'Rich', 'Fluffy']
+            };
+            const nouns = {
+                'Appetizer': ['Spring Rolls', 'Salad', 'Soup', 'Wings', 'Dumplings', 'Skewers'],
+                'Main Course': ['Chicken', 'Beef', 'Salmon', 'Pasta', 'Rice Bowl', 'Tofu'],
+                'Dessert': ['Cake', 'Pudding', 'Tart', 'Mousse', 'Ice Cream', 'Fruit']
+            };
+
+            for(let i=0; i<count; i++) {
+                const prefix = prefixes[type][i % prefixes[type].length];
+                const noun = nouns[type][i % nouns[type].length];
+                const price = (Math.random() * 8 + 5).toFixed(2);
+                
+                items.push({
+                    id: `${day.substring(0,3)}-${type.substring(0,3)}-${i}`,
+                    name: `${day} ${prefix} ${noun}`,
+                    category: type,
+                    price: parseFloat(price),
+                    day: day
+                });
+            }
+            return items;
+        }
+
+        // --- State ---
+        let cart = {}; // { 'id': { qty, ...itemData } }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabs();
+            renderMenu(currentDay);
+            updateCart();
+        });
+
+        // --- Render Functions ---
+        function renderTabs() {
+            const container = document.getElementById('day-tabs');
+            container.innerHTML = days.map(d => 
+                `<button class="day-tab ${d === currentDay ? 'active' : ''}" onclick="switchDay('${d}')">${d}</button>`
+            ).join('');
+        }
+
+        function switchDay(day) {
+            currentDay = day;
+            renderTabs();
+            renderMenu(day);
+        }
+
+        function renderMenu(day) {
+            const container = document.getElementById('menu-container');
+            const data = menuDB[day];
+            let html = '';
+
+            const createSection = (title, items) => {
+                let s = `<div class="category-header">${title}</div><div class="menu-grid">`;
+                s += items.map(item => `
+                    <div class="menu-card">
+                        <div>
+                            <div class="m-title">${item.name}</div>
+                            <div class="m-desc">Delicious ${item.category.toLowerCase()} for ${day}.</div>
+                        </div>
+                        <div class="m-bottom">
+                            <div class="m-price">$${item.price.toFixed(2)}</div>
+                            <button class="btn-add" onclick="addToCart('${item.id}')">
+                                <i class="ph-bold ph-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                s += `</div>`;
+                return s;
+            };
+
+            html += createSection('Appetizers (4)', data.appetizers);
+            html += createSection('Main Courses (4)', data.mains);
+            html += createSection('Desserts (6)', data.desserts);
+
+            container.innerHTML = html;
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-list');
+            const ids = Object.keys(cart);
+            let subtotal = 0;
+
+            if (ids.length === 0) {
+                container.innerHTML = '<div class="empty-msg">Your cart is empty.<br>Select a day to start ordering.</div>';
+                document.getElementById('pay-btn').disabled = true;
+                updateTotals(0);
+                return;
+            }
+
+            document.getElementById('pay-btn').disabled = false;
+            let html = '';
+
+            ids.forEach(id => {
+                const item = cart[id];
+                subtotal += item.price * item.qty;
+                
+                html += `
+                    <div class="cart-item">
+                        <div class="ci-left">
+                            <span class="ci-day">${item.day.substring(0,3).toUpperCase()}</span>
+                            <span class="ci-name">${item.name}</span>
+                            <span class="ci-price">$${item.price} x ${item.qty}</span>
+                        </div>
+                        <div class="ci-controls">
+                            <button class="ci-btn" onclick="changeQty('${id}', -1)"><i class="ph-bold ph-minus"></i></button>
+                            <span style="font-weight:600; font-size: 0.9rem; min-width:20px; text-align:center;">${item.qty}</span>
+                            <button class="ci-btn" onclick="changeQty('${id}', 1)"><i class="ph-bold ph-plus"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateTotals(subtotal);
+        }
+
+        function updateTotals(sub) {
+            const tax = sub * 0.05;
+            const total = sub + tax;
+            
+            document.getElementById('subtotal').innerText = '$' + sub.toFixed(2);
+            document.getElementById('tax').innerText = '$' + tax.toFixed(2);
+            document.getElementById('total').innerText = '$' + total.toFixed(2);
+            document.getElementById('modal-total').innerText = '$' + total.toFixed(2);
+        }
+
+        // --- Actions ---
+
+        function findItem(id) {
+            const dayCode = id.split('-')[0];
+            const fullDay = days.find(d => d.startsWith(dayCode));
+            if(!fullDay) return null;
+            
+            const allItems = [
+                ...menuDB[fullDay].appetizers,
+                ...menuDB[fullDay].mains,
+                ...menuDB[fullDay].desserts
+            ];
+            return allItems.find(i => i.id === id);
+        }
+
+        function addToCart(id) {
+            if (!cart[id]) {
+                const itemData = findItem(id);
+                if (itemData) cart[id] = { ...itemData, qty: 0 };
+            }
+            cart[id].qty++;
+            updateCart();
+        }
+
+        function changeQty(id, change) {
+            if (!cart[id]) return;
+            cart[id].qty += change;
+            if (cart[id].qty <= 0) delete cart[id];
+            updateCart();
+        }
+
+        // --- Payment Flow ---
+
+        function openPaymentModal() {
+            const ids = Object.keys(cart);
+            if (ids.length === 0) return;
+            document.getElementById('payment-modal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        async function submitOrder(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            
+            // 1. Gather Form Data
+            const bookingName = document.querySelector('input[placeholder="Enter name"]').value;
+            const contact = document.querySelector('input[placeholder="Phone number"]').value;
+            const school = document.querySelector('input[placeholder="e.g. Sunnydale High"]').value;
+            const className = document.querySelector('input[placeholder="e.g. 5A"]').value;
+            const photoInput = document.getElementById('payment-photo');
+
+            // Validation
+            if (photoInput.files.length === 0) {
+                alert("Please upload a payment photo.");
+                return;
+            }
+
+            // 2. Prepare Payload (FormData is required for file uploads)
+            const formData = new FormData();
+            formData.append('bookingName', bookingName);
+            formData.append('contact', contact);
+            formData.append('school', school);
+            formData.append('className', className);
+            formData.append('paymentPhoto', photoInput.files[0]);
+            formData.append('cart', JSON.stringify(cart)); // Send cart as a JSON string
+
+            // 3. Send to Backend
+            btn.innerHTML = `<i class="ph-bold ph-spinner ph-spin"></i> Uploading...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/submit-order', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    closeModal('payment-modal');
+                    document.getElementById('success-modal').classList.add('active');
+                    
+                    // Reset Cart
+                    cart = {};
+                    updateCart();
+                    e.target.reset(); // Clear form
+                } else {
+                    alert('Error submitting order. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error. Is the server running?');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
